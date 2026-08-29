@@ -3,7 +3,7 @@
 # Utils ===================================================================
 
 
-computationOf_G_chi_ZU <- function (Z1, Z2, U3, n)
+computationOf_G_chi_ZU <- function (Z1, Z2, U3, nBoxes = 5)
 {
 
   # Computation of GI,J(x1 , x2, x3)
@@ -15,15 +15,15 @@ computationOf_G_chi_ZU <- function (Z1, Z2, U3, n)
 
   # Computation of GI,J(Bk, Ai)
 
-  listG = array(dim = c(5 , 5 , 5))
-  partition = seq(from = 0 , to = 1 , length.out = 6)
+  listG = array(dim = rep(nBoxes, 3))
+  partition = seq(from = 0 , to = 1 , length.out = nBoxes + 1)
 
 
-  for (k1 in (1:5))
+  for (k1 in 1:nBoxes)
   {
-    for (k2 in 1:5)
+    for (k2 in 1:nBoxes)
     {
-      for (k3 in 1:5)
+      for (k3 in 1:nBoxes)
       {
         listG[k1, k2, k3] = (
           fonctionG_IJ(partition[k1+1] , partition[k2+1] , partition[k3+1])
@@ -44,11 +44,11 @@ computationOf_G_chi_ZU <- function (Z1, Z2, U3, n)
 
   # Computation of GI,J(Bk, R)
 
-  listG_BkR = matrix(nrow = 5, ncol = 5)
+  listG_BkR = matrix(nrow = nBoxes, ncol = nBoxes)
 
-  for (k1 in 1:5)
+  for (k1 in 1:nBoxes)
   {
-    for (k2 in 1:5)
+    for (k2 in 1:nBoxes)
     {
       listG_BkR[k1 , k2] = (
         fonctionG_IJ(partition[k1+1] , partition[k2+1] , 1)
@@ -68,9 +68,9 @@ computationOf_G_chi_ZU <- function (Z1, Z2, U3, n)
 
   # Computation of GI,J(R^2, Al)
 
-  listG_R2Al = rep(NA , 5)
+  listG_R2Al = rep(NA , nBoxes)
 
-  for (k3 in 1:5)
+  for (k3 in 1:nBoxes)
   {
 
     listG_R2Al[k3] = (
@@ -91,13 +91,13 @@ computationOf_G_chi_ZU <- function (Z1, Z2, U3, n)
 
   # Computation of G indep
 
-  listG_indep = array(dim = c(5 , 5 , 5))
+  listG_indep = array(dim = rep(nBoxes, 3))
 
-  for (k1 in (1:5))
+  for (k1 in 1:nBoxes)
   {
-    for (k2 in 1:5)
+    for (k2 in 1:nBoxes)
     {
-      for (k3 in 1:5)
+      for (k3 in 1:nBoxes)
       {
         listG_indep[k1, k2, k3] = listG_BkR[k1 , k2] * listG_R2Al[k3]
       }
@@ -132,7 +132,7 @@ testStat_Ichi <- function(env)
 
   # Computation of G
   env$resultG = computationOf_G_chi_ZU(Z1 = env$Z1, Z2 = env$Z2,
-                                       U3 = env$U3, n = env$n)
+                                       U3 = env$U3, nBoxes = env$nBoxes)
   env$listG = env$resultG$G
   env$listG_indep = env$resultG$G_indep
   env$normalized_diff = (env$listG - env$listG_indep)^2 / env$listG_indep
@@ -167,7 +167,7 @@ testStat_Ichi_boot1st <- function(env)
 
   # Computation of G
   env$resultG_st = computationOf_G_chi_ZU(Z1 = env$Z1_st, Z2 = env$Z2_st,
-                                          U3 = env$U3_st, n = env$n)
+                                          U3 = env$U3_st, nBoxes = env$nBoxes)
   env$listG_st = env$resultG_st$G
   env$listG_indep_st = env$resultG_st$G_indep
   env$normalized_diff = (env$listG_st - env$listG
@@ -203,7 +203,7 @@ testStat_Ichi_boot2st <- function(env)
 
   # Computation of G
   env$resultG_st = computationOf_G_chi_ZU(Z1 = env$Z1_st, Z2 = env$Z2_st,
-                                          U3 = env$U3_st, n = env$n)
+                                          U3 = env$U3_st, nBoxes = env$nBoxes)
   env$listG_st = env$resultG_st$G
   env$listG_indep_st = env$resultG_st$G_indep
   env$normalized_diff = (env$listG_st - env$listG_indep_st)^2 / env$listG_indep_st

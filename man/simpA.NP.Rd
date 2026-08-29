@@ -14,7 +14,8 @@ simpA.NP(
   nBootstrap = 100,
   kernel.name = "Epanechnikov",
   truncVal = NULL,
-  numericalInt = list(kind = "legendre", nGrid = 10)
+  numericalInt = list(kind = "legendre", nGrid = 10),
+  nBoxes = 5
 )
 }
 \arguments{
@@ -84,6 +85,9 @@ The default is \code{truncVal = NULL}, which actually means that
 \item{numericalInt}{parameters to be given to
 \code{statmod::\link[statmod]{gauss.quad}}, including the number of
 quadrature points and the type of interpolation.}
+
+\item{nBoxes}{number of boxes per axis used to partition \eqn{[0,1]^3}
+for the test statistic \code{I_chi} (default 5, as in Derumigny & Fermanian, 2017).}
 }
 \value{
 a list containing
