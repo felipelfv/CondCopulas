@@ -18,15 +18,18 @@ computationOf_G_chi_ZU <- function (Z1, Z2, U3, nBoxes = 5)
             boxZ2 >= 1 & boxZ2 <= nBoxes &
             boxU3 >= 1 & boxU3 <= nBoxes)
 
-  # Computation of GI,J(Bk, Ai): proportion of observations in each 3D box
+  # Computation of GI,J(Bk, Ai)
 
   cellIndex = ((boxU3[inside] - 1) * nBoxes + (boxZ2[inside] - 1)) * nBoxes +
     boxZ1[inside]
   listG = array(tabulate(cellIndex, nbins = nBoxes^3) / n, dim = rep(nBoxes, 3))
 
-  # Computation of GI,J(Bk, R) and GI,J(R^2, Al): marginals of GI,J(Bk, Ai)
+  # Computation of GI,J(Bk, R)
 
   listG_BkR = apply(listG, c(1, 2), sum)
+
+  # Computation of GI,J(R^2, Al)
+
   listG_R2Al = apply(listG, 3, sum)
 
   # Computation of G indep
