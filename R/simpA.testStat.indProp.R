@@ -5,104 +5,33 @@
 
 computationOf_G_chi_ZU <- function (Z1, Z2, U3, nBoxes = 5)
 {
-
-  # Computation of GI,J(x1 , x2, x3)
-
-  fonctionG_IJ <- function (x1, x2, x3)
-  {
-    return (mean(as.numeric((Z1 <= x1) & (Z2 <= x2) & (U3 <= x3) )))
-  }
-
-  # Computation of GI,J(Bk, Ai)
-
-  listG = array(dim = rep(nBoxes, 3))
+  n = length(U3)
   partition = seq(from = 0 , to = 1 , length.out = nBoxes + 1)
 
+  # Index of the box (partition[k], partition[k+1]] containing each
+  # observation; 0 (or nBoxes + 1) if the observation falls outside (0, 1]
+  boxZ1 = findInterval(Z1, partition, left.open = TRUE)
+  boxZ2 = findInterval(Z2, partition, left.open = TRUE)
+  boxU3 = findInterval(U3, partition, left.open = TRUE)
 
-  for (k1 in 1:nBoxes)
-  {
-    for (k2 in 1:nBoxes)
-    {
-      for (k3 in 1:nBoxes)
-      {
-        listG[k1, k2, k3] = (
-          fonctionG_IJ(partition[k1+1] , partition[k2+1] , partition[k3+1])
+  inside = (boxZ1 >= 1 & boxZ1 <= nBoxes &
+            boxZ2 >= 1 & boxZ2 <= nBoxes &
+            boxU3 >= 1 & boxU3 <= nBoxes)
 
-        - fonctionG_IJ(partition[k1  ] , partition[k2+1] , partition[k3+1])
-        - fonctionG_IJ(partition[k1+1] , partition[k2  ] , partition[k3+1])
-        - fonctionG_IJ(partition[k1+1] , partition[k2+1] , partition[k3  ])
+  # Computation of GI,J(Bk, Ai): proportion of observations in each 3D box
 
-        + fonctionG_IJ(partition[k1+1] , partition[k2  ] , partition[k3  ])
-        + fonctionG_IJ(partition[k1  ] , partition[k2+1] , partition[k3  ])
-        + fonctionG_IJ(partition[k1  ] , partition[k2  ] , partition[k3+1])
+  cellIndex = ((boxU3[inside] - 1) * nBoxes + (boxZ2[inside] - 1)) * nBoxes +
+    boxZ1[inside]
+  listG = array(tabulate(cellIndex, nbins = nBoxes^3) / n, dim = rep(nBoxes, 3))
 
-        - fonctionG_IJ(partition[k1] , partition[k2] , partition[k3])
-        )
-      }
-    }
-  }
+  # Computation of GI,J(Bk, R) and GI,J(R^2, Al): marginals of GI,J(Bk, Ai)
 
-  # Computation of GI,J(Bk, R)
-
-  listG_BkR = matrix(nrow = nBoxes, ncol = nBoxes)
-
-  for (k1 in 1:nBoxes)
-  {
-    for (k2 in 1:nBoxes)
-    {
-      listG_BkR[k1 , k2] = (
-        fonctionG_IJ(partition[k1+1] , partition[k2+1] , 1)
-
-      - fonctionG_IJ(partition[k1  ] , partition[k2+1] , 1)
-      - fonctionG_IJ(partition[k1+1] , partition[k2  ] , 1)
-      - fonctionG_IJ(partition[k1+1] , partition[k2+1] , 0)
-
-      + fonctionG_IJ(partition[k1+1] , partition[k2  ] , 0)
-      + fonctionG_IJ(partition[k1  ] , partition[k2+1] , 0)
-      + fonctionG_IJ(partition[k1  ] , partition[k2  ] , 1)
-
-      - fonctionG_IJ(partition[k1] , partition[k2] , 0)
-      )
-    }
-  }
-
-  # Computation of GI,J(R^2, Al)
-
-  listG_R2Al = rep(NA , nBoxes)
-
-  for (k3 in 1:nBoxes)
-  {
-
-    listG_R2Al[k3] = (
-      fonctionG_IJ(1               , 1               , partition[k3+1])
-
-    - fonctionG_IJ(0               , 1               , partition[k3+1])
-    - fonctionG_IJ(1               , 0               , partition[k3+1])
-    - fonctionG_IJ(1               , 1               , partition[k3  ])
-
-    + fonctionG_IJ(1               , 0               , partition[k3  ])
-    + fonctionG_IJ(0               , 1               , partition[k3  ])
-    + fonctionG_IJ(0               , 0               , partition[k3+1])
-
-    - fonctionG_IJ(0               , 0               , partition[k3])
-    )
-
-  }
+  listG_BkR = apply(listG, c(1, 2), sum)
+  listG_R2Al = apply(listG, 3, sum)
 
   # Computation of G indep
 
-  listG_indep = array(dim = rep(nBoxes, 3))
-
-  for (k1 in 1:nBoxes)
-  {
-    for (k2 in 1:nBoxes)
-    {
-      for (k3 in 1:nBoxes)
-      {
-        listG_indep[k1, k2, k3] = listG_BkR[k1 , k2] * listG_R2Al[k3]
-      }
-    }
-  }
+  listG_indep = outer(listG_BkR, listG_R2Al)
 
   return (list(G=listG , G_indep=listG_indep))
 }
